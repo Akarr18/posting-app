@@ -5,16 +5,29 @@ const postModel=require('./models/post');
 const cparser= require('cookie-parser');
 const bcrypt= require('bcrypt');
 const jwt = require('jsonwebtoken');
+const upload  = require('./config/multerconfig')
+const crypto =require("crypto");
+const { log } = require('console');
+const path =require('path');
 
 app.set("view engine","ejs");
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
+app.use(express.static(path.join(__dirname,"public")));
 app.use(cparser());
 
-app.get('/',(req,res) => {
+
+
+
+
+ app.get('/',(req,res) => {
    
     res.render('index');
  })
+
+
+ 
+
  app.post('/register', async (req,res) => {
 
     let{username,name,email,password,age}=req.body;
@@ -126,4 +139,19 @@ app.post('/update/:id',islogin,async (req,res)=>{
    
     res.redirect("/profile");
 })
+app.get('/profile/upload',(req,res) => {
+   
+    res.render('profileupload');
+ })
+
+ 
+ app.post('/upload',islogin, upload.single("image"),async (req,res) => {
+   
+    let user= await userModel.findOne({email:req.user.email});
+    user.profilepic =req.file.filename;
+    await user.save();
+    res.redirect("/profile");
+ });
+
+
  app.listen(3000);
